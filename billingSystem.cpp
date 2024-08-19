@@ -84,10 +84,14 @@ public:
 class Billing {
 private:
     vector<Item> items;  // Vector of Item objects
-    Customer customer;
+    Customer* customer;  // Pointer to Customer object
 
 public:
-    Billing(Customer customer) : customer(customer) {}
+    Billing(Customer* customer) : customer(customer) {}
+
+    ~Billing() {
+        delete customer;  // Deleting the dynamically allocated Customer object
+    }
 
     void addItem(const Item& item) {
         items.push_back(item);  // Adding item to vector
@@ -110,7 +114,7 @@ public:
 
     void generateInvoice() const {
         cout << "Invoice:" << endl;
-        customer.display();
+        customer->display();
         displayItems();
         cout << "Total Amount: $" << fixed << setprecision(2) << calculateTotal() << endl;
     }
@@ -181,9 +185,9 @@ int main() {
     cout << "Enter customer phone number: ";
     getline(cin, customerPhone);
 
-    // Create a customer and billing instance
-    Customer customer(customerName, customerPhone);
-    Billing billing(customer);
+    // Create a customer and billing instance dynamically
+    Customer* customer = new Customer(customerName, customerPhone);
+    Billing* billing = new Billing(customer);
 
     do {
         cout << "\nMenu:\n";
@@ -205,16 +209,16 @@ int main() {
 
                 for (int i = 0; i < numItems; ++i) {
                     cout << "Enter details for item " << (i + 1) << ":" << endl;
-                    addItem(billing);
+                    addItem(*billing);
                 }
                 break;
             case 2:
                 // Edit an item
-                editItem(billing);
+                editItem(*billing);
                 break;
             case 3:
                 // Generate and display the invoice
-                billing.generateInvoice();
+                billing->generateInvoice();
                 break;
             case 4:
                 cout << "Exiting..." << endl;
@@ -224,6 +228,9 @@ int main() {
         }
 
     } while (choice != 4);
+
+    // Delete the dynamically allocated billing object
+    delete billing;
 
     return 0;
 }
