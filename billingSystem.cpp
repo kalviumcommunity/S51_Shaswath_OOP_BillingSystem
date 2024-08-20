@@ -12,10 +12,17 @@ private:
     string itemName;
     double price;
     double discount;
+    static int itemCount;  // Static variable to keep track of the number of items
 
 public:
     Item(int id = 0, string name = "", double price = 0.0, double discount = 0.0)
-        : itemId(id), itemName(name), price(price), discount(discount) {}
+        : itemId(id), itemName(name), price(price), discount(discount) {
+        itemCount++;
+    }
+
+    static int getItemCount() {  // Static method to access itemCount
+        return itemCount;
+    }
 
     void display() const {
         cout << "Item ID: " << itemId
@@ -50,15 +57,25 @@ public:
     }
 };
 
+// Initialize the static variable
+int Item::itemCount = 0;
+
 // Customer class definition
 class Customer {
 private:
     string name;
     string phoneNumber;
+    static int customerCount;  // Static variable to keep track of the number of customers
 
 public:
     Customer(string name = "", string phoneNumber = "")
-        : name(name), phoneNumber(phoneNumber) {}
+        : name(name), phoneNumber(phoneNumber) {
+        customerCount++;
+    }
+
+    static int getCustomerCount() {  // Static method to access customerCount
+        return customerCount;
+    }
 
     void display() const {
         cout << "Customer Name: " << name
@@ -79,6 +96,9 @@ public:
         return *this;
     }
 };
+
+// Initialize the static variable
+int Customer::customerCount = 0;
 
 // Billing class definition
 class Billing {
@@ -117,6 +137,8 @@ public:
         customer->display();
         displayItems();
         cout << "Total Amount: $" << fixed << setprecision(2) << calculateTotal() << endl;
+        cout << "Total Items Added: " << Item::getItemCount() << endl;
+        cout << "Total Customers Served: " << Customer::getCustomerCount() << endl;
     }
 
     bool editItem(int id, const string& newName, double newPrice, double newDiscount) {
