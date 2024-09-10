@@ -20,7 +20,7 @@ public:
         itemCount++;
     }
 
-    static int getItemCount() {  // Static method to access itemCount
+    static int getItemCount() {
         return itemCount;
     }
 
@@ -41,19 +41,19 @@ public:
     double getPrice() const { return price; }
     double getDiscount() const { return discount; }
 
-    Item& setName(const string& newName) { 
-        itemName = newName; 
-        return *this; 
+    Item& setName(const string& newName) {
+        itemName = newName;
+        return *this;
     }
 
-    Item& setPrice(double newPrice) { 
-        price = newPrice; 
-        return *this; 
+    Item& setPrice(double newPrice) {
+        price = newPrice;
+        return *this;
     }
 
-    Item& setDiscount(double newDiscount) { 
-        discount = newDiscount; 
-        return *this; 
+    Item& setDiscount(double newDiscount) {
+        discount = newDiscount;
+        return *this;
     }
 };
 
@@ -73,7 +73,7 @@ public:
         customerCount++;
     }
 
-    static int getCustomerCount() {  // Static method to access customerCount
+    static int getCustomerCount() {
         return customerCount;
     }
 
@@ -100,21 +100,21 @@ public:
 // Initialize the static variable
 int Customer::customerCount = 0;
 
-// Billing class definition
+// Base Billing class definition (Abstract Class)
 class Billing {
-private:
-    vector<Item> items;  // Vector of Item objects
-    Customer* customer;  // Pointer to Customer object
+protected:
+    vector<Item> items;
+    Customer* customer;
 
 public:
     Billing(Customer* customer) : customer(customer) {}
 
-    ~Billing() {
-        delete customer;  // Deleting the dynamically allocated Customer object
+    virtual ~Billing() {
+        delete customer;
     }
 
     void addItem(const Item& item) {
-        items.push_back(item);  // Adding item to vector
+        items.push_back(item);
     }
 
     void displayItems() const {
@@ -124,13 +124,7 @@ public:
         }
     }
 
-    double calculateTotal() const {
-        double total = 0.0;
-        for (const auto& item : items) {
-            total += item.getDiscountedPrice();
-        }
-        return total;
-    }
+    virtual double calculateTotal() const = 0;  // Pure virtual function
 
     void generateInvoice() const {
         cout << "Invoice:" << endl;
@@ -145,12 +139,45 @@ public:
         for (auto& item : items) {
             if (item.getId() == id) {
                 item.setName(newName)
-                      .setPrice(newPrice)
-                      .setDiscount(newDiscount);
+                    .setPrice(newPrice)
+                    .setDiscount(newDiscount);
                 return true;
             }
         }
         return false;
+    }
+};
+
+// Derived RegularBilling class definition
+class RegularBilling : public Billing {
+public:
+    RegularBilling(Customer* customer) : Billing(customer) {}
+
+    double calculateTotal() const override {
+        double total = 0.0;
+        for (const auto& item : items) {
+            total += item.getDiscountedPrice();
+        }
+        return total;
+    }
+};
+
+// Derived DiscountedBilling class definition
+class DiscountedBilling : public Billing {
+private:
+    double additionalDiscount;
+
+public:
+    DiscountedBilling(Customer* customer, double discount)
+        : Billing(customer), additionalDiscount(discount) {}
+
+    double calculateTotal() const override {
+        double total = 0.0;
+        for (const auto& item : items) {
+            total += item.getDiscountedPrice();
+        }
+        total -= additionalDiscount;
+        return total;
     }
 };
 
@@ -201,7 +228,6 @@ int main() {
     string customerName, customerPhone;
     int choice;
 
-    // Get customer details
     cout << "Enter customer name: ";
     getline(cin, customerName);
     cout << "Enter customer phone number: ";
@@ -209,7 +235,27 @@ int main() {
 
     // Create a customer and billing instance dynamically
     Customer* customer = new Customer(customerName, customerPhone);
-    Billing* billing = new Billing(customer);
+    Billing* billing = nullptr;
+
+    cout << "Choose billing type:\n";
+    cout << "1. Regular Billing\n";
+    cout << "2. Discounted Billing\n";
+    cout << "Enter your choice: ";
+    int billingChoice;
+    cin >> billingChoice;
+
+    if (billingChoice == 1) {
+        billing = new RegularBilling(customer);
+    } else if (billingChoice == 2) {
+        double additionalDiscount;
+        cout << "Enter additional discount amount: ";
+        cin >> additionalDiscount;
+        billing = new DiscountedBilling(customer, additionalDiscount);
+    } else {
+        cout << "Invalid choice!" << endl;
+        delete customer;
+        return 1;
+    }
 
     do {
         cout << "\nMenu:\n";
@@ -223,7 +269,6 @@ int main() {
 
         switch (choice) {
             case 1:
-                // Add items dynamically
                 int numItems;
                 cout << "Enter number of items: ";
                 cin >> numItems;
@@ -235,11 +280,9 @@ int main() {
                 }
                 break;
             case 2:
-                // Edit an item
                 editItem(*billing);
                 break;
             case 3:
-                // Generate and display the invoice
                 billing->generateInvoice();
                 break;
             case 4:
