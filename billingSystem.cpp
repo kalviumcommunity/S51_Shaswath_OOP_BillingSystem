@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-
 using namespace std;
 
 // Item class definition
@@ -162,22 +161,33 @@ public:
     }
 };
 
-// Derived DiscountedBilling class definition
-class DiscountedBilling : public Billing {
-private:
+// Class Discount Policy
+class DiscountPolicy {
+protected:
     double additionalDiscount;
 
 public:
+    DiscountPolicy(double discount = 0.0) : additionalDiscount(discount) {}
+
+    
+    double applyAdditionalDiscount(double total) const {
+        return total - additionalDiscount;
+    }
+};
+
+
+// Derived DiscountedBilling class definition
+class DiscountedBilling : public Billing, public DiscountPolicy {
+public:
     DiscountedBilling(Customer* customer, double discount)
-        : Billing(customer), additionalDiscount(discount) {}
+        : Billing(customer), DiscountPolicy(discount) {}
 
     double calculateTotal() const override {
         double total = 0.0;
         for (const auto& item : items) {
             total += item.getDiscountedPrice();
         }
-        total -= additionalDiscount;
-        return total;
+        return applyAdditionalDiscount(total); 
     }
 };
 
