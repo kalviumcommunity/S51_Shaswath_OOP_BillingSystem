@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-
 using namespace std;
 
 // Item class definition
